@@ -46,25 +46,12 @@ Two rules the settings panel enforces, both of which exist to keep you from lock
 
 ## Non-latin keyboards
 
-The snippet works on a Korean layout, and the reason is worth knowing if you are building something similar.
-
-On a Korean layout the key printed `a` reports `event.key === 'ㅁ'`, so matching on the logical key can never succeed. This extension prefers the logical key — which keeps Dvorak and AZERTY correct, where the physical key is the wrong answer — and falls back to `event.code` only when the logical key is not a latin letter at all.
-
-There is a second, nastier half. macOS's Korean IME starts composing **even when the keydown is `preventDefault()`ed**, so the first hint keystroke opens a composition and every keystroke after it arrives with `isComposing` set. Guarding on that would swallow them; ignoring it would corrupt real typing. The fix is to remove the thing being composed into: hint mode blurs the focused element on entry and restores focus on exit.
-
-Neither problem is visible to code review. Both were found by a human pressing keys.
+The snippet works with a Korean or Japanese input source on. Labels match the letter a key types, so Dvorak and AZERTY work as printed; when that letter isn't latin, the snippet reads the key's US position instead. Hint mode moves the focus away from the prompt box while labels show, so the input method can't turn hint keys into composed text, and gives it back when you leave.
 
 ## Why the snippet has no installer
 
-Claude Desktop ships a complete local copy of the web app at `Contents/Resources/ion-dist/`, served at `app://localhost` — and it is not what the window renders, so there is still no on-disk document to add a `<script>` tag to. A probe placed in that `index.html` in August 2026 never ran; the top document's origin was `claude.ai`.
+The window renders remote `claude.ai`, so there is no file on disk that the page loads and a `<script>` tag could go into. Claude Desktop does ship a local copy of the web app, but loads it only in a third-party deployment mode, which would also stop your claude.ai account from working.
 
-What decides it is the deployment mode, and there are exactly two. The first-party one loads remote `claude.ai`; a third-party one loads the bundle. No ordinary sign-in reaches the second — it is selected by a merged config carrying an `inference`, `selfHosted` or `bootstrap.url` key. Checked on 2.2553.1: the only origin in the app's Local Storage is `https://claude.ai`.
+Injecting from outside the app is closed too. The app is signed with Hardened Runtime and refuses debuggers and injected libraries, and it quits when started with remote-debugging flags. Patching its bundle to add a preload script breaks its code signature and has to be redone after every update.
 
-You can write that config — its local tier is an ordinary user-writable directory — and you should not. Third-party mode *is* a third-party deployment: the app answers `/api/bootstrap` and friends locally and sends inference to whatever provider the config names, so your claude.ai account stops working. That is a large price for a keyboard shortcut. (In that mode the bundle would not resist injection. Its `index.html` carries no `<meta>` policy and the CSP is synthesized at load time, with `script-src 'self'` admitting a sibling file, an automatic `sha256-` for each inline block, and no SRI.)
-
-Injecting from outside the app is closed off too. The binary is signed with Hardened Runtime and carries none of the entitlements that would allow it — no `get-task-allow`, no `disable-library-validation`, no `allow-dyld-environment-variables` — so debugger attach and `DYLD_INSERT_LIBRARIES` are both out. And the app terminates itself on startup if it sees `--remote-debugging-port` or `--remote-debugging-pipe` — now alongside `--disable-web-security`, `--host-rules` and `--ignore-certificate-errors` — which closes the Chrome DevTools Protocol route.
-
-That leaves patching the app bundle's `app.asar` to add a preload script. It works, but it means recomputing the ASAR integrity hash and editing `Info.plist` — get it wrong and the app will not launch — and redoing it after every app update. Any edit under `Contents/Resources/` also breaks the `_CodeSignature/CodeResources` seal. That does not stop the app launching, but it is a second thing a loader has to own.
-
-The [app](../README.md#how-it-works) sidesteps all of this by working from outside the page, through the Accessibility API, instead of injecting into it.
-
+The [app](../README.md#how-it-works) works from outside the page, through the Accessibility API, instead of injecting into it.
