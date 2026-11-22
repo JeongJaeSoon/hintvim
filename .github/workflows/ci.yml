@@ -40,6 +40,7 @@ jobs:
           tarball="$RUNNER_TEMP/hintvim-$version.tar.gz"
           git archive --format=tar.gz --prefix="hintvim-$version/" -o "$tarball" HEAD
           brew tap-new --no-git ci/local
+          brew trust ci/local
           tap=$(brew --repository ci/local)
           sed -e "s#^  url .*#  url \"file://$tarball\"#" \
               -e "s#^  sha256 .*#  sha256 \"$(shasum -a 256 "$tarball" | cut -d' ' -f1)\"#" \
