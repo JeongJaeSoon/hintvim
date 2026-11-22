@@ -13,6 +13,8 @@ d=$(mktemp -d); (cd "$d" && claude plugin test "$OLDPWD/plugin"); rm -rf "$d"
 
 CI runs `make test`, builds the app, runs shellcheck, and builds, installs and tests the Homebrew formula from your branch on a clean macOS runner. It does not run the two `claude plugin` commands, so run them yourself when you change `plugin/`.
 
+`bin/hintvim` run from the repository uses `build/Hintvim.app`, and `HINTVIM_MARKETPLACE=$PWD bin/hintvim setup` installs the plugin from your checkout.
+
 ## Changes to the app
 
 The drawing, the key handling and the Accessibility walk have no automated tests, so a pull request that touches `app/main.swift` needs these checked by hand on a real Claude Desktop. Say in the pull request which ones you ran, and on which macOS and Claude Desktop versions.
@@ -36,9 +38,3 @@ It edits `~/.claude/settings.json`. Add a case to `test/cli.test.sh` for any new
 - Match the code around you. Comments say what the code can't.
 - Small commits with plain messages (`fix: …`, `feat: …`, `docs: …`).
 - Add a line to the `Unreleased` section of [CHANGELOG.md](CHANGELOG.md) for anything a user would notice.
-
-## Releasing (maintainers)
-
-1. Move the `Unreleased` notes under a new version in `CHANGELOG.md`, and set the same version in `plugin/.claude-plugin/plugin.json` and in the `url` of `packaging/hintvim.rb`.
-2. Merge, then push a tag `vX.Y.Z` on `main`. The release workflow checks the versions and publishes the GitHub release.
-3. Publish the formula to `JeongJaeSoon/homebrew-tap` with `sh scripts/publish-tap.sh vX.Y.Z`. It fills in the tarball's sha256. With a `TAP_TOKEN` secret set, the release workflow runs it for you.
