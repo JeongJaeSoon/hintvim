@@ -103,7 +103,7 @@ brew upgrade hintvim && hintvim setup
 
 `hintvim setup` restarts the new app. Don't run `hintvim uninstall` to upgrade: it resets the Accessibility permission.
 
-If your current install was built from source rather than signed, macOS may ask you to allow Accessibility once more after the upgrade. Signed updates keep the permission.
+If your current install was built from source rather than signed, macOS may ask you to allow Accessibility once more after the upgrade. Later signed updates should keep it, since they carry the same signature and bundle ID.
 
 If you installed hintvim under its old name, claude-vimium, `brew upgrade` moves it to hintvim, and `hintvim setup` then removes claude-vimium's login item, plugin, state and Accessibility entry.
 
@@ -178,7 +178,6 @@ A [DevTools snippet](docs/devtools-snippet.md) gives the same hint mode over the
 - macOS only.
 - The leader key and the hint alphabet are fixed in the app. The DevTools snippet lets you change them.
 - Hint mode labels at most 169 visible controls per refresh. Scroll to relabel; controls beyond that limit do not receive a label.
-- The overlay drawing and key handling have no automated tests; they are verified by hand on a real Claude Desktop.
 
 ## Contributing
 
