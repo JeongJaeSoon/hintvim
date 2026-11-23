@@ -33,6 +33,7 @@ jobs:
         run: |
           archive="$PWD/dist/hintvim-1.0.2-macos-universal.tar.gz"
           brew tap-new --no-git ci/signed
+          brew trust ci/signed
           tap=$(brew --repository ci/signed)
           sed -e "s#^  url .*#  url \"file://$archive\"#" \
               -e "s#^  sha256 .*#  sha256 \"$(shasum -a 256 "$archive" | cut -d' ' -f1)\"#" \
